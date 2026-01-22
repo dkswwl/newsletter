@@ -206,43 +206,43 @@ export default function Home() {
     // 0) 작성자 문자열 정리(빈칸이면 null로 저장)
     const editedBy = editorName.trim() ? editorName.trim() : null;
 
-    // 1) intro 히스토리 먼저 기록
-    const { error: metaHistError } = await supabase
-      .from('newsletter_meta_history')
-      .insert({
-        meta_id: 1,
-        intro_text: introText,
-        edited_by: editedBy,
-        edited_at: new Date().toISOString(),
-      });
+    // // 1) intro 히스토리 먼저 기록
+    // const { error: metaHistError } = await supabase
+    //   .from('newsletter_meta_history')
+    //   .insert({
+    //     meta_id: 1,
+    //     intro_text: introText,
+    //     edited_by: editedBy,
+    //     edited_at: new Date().toISOString(),
+    //   });
 
-    if (metaHistError) {
-      console.error('meta history insert error:', metaHistError);
-      alert('인트로 히스토리 저장 실패');
-      return;
-    }
+    // if (metaHistError) {
+    //   console.error('meta history insert error:', metaHistError);
+    //   alert('인트로 히스토리 저장 실패');
+    //   return;
+    // }
 
-    // 2) 기관 카드 히스토리 기록 (배치 insert)
-    const cardHistoryRows = cardData.map((c) => ({
-      institution_id: c.id,
-      lab: c.lab ?? '(unknown)',
-      title: c.title ?? '',
-      content: c.desc ?? '',
-      main_image: c.mainImage ?? 'neuromeka.png',
-      edited_by: editedBy ?? c.lab ?? null,
-      edited_at: new Date().toISOString(),
-    }));
+    // // 2) 기관 카드 히스토리 기록 (배치 insert)
+    // const cardHistoryRows = cardData.map((c) => ({
+    //   institution_id: c.id,
+    //   lab: c.lab ?? '(unknown)',
+    //   title: c.title ?? '',
+    //   content: c.desc ?? '',
+    //   main_image: c.mainImage ?? 'neuromeka.png',
+    //   edited_by: editedBy ?? c.lab ?? null,
+    //   edited_at: new Date().toISOString(),
+    // }));
 
 
-    const { error: cardHistError } = await supabase
-      .from('institution_content_history')
-      .insert(cardHistoryRows);
+    // const { error: cardHistError } = await supabase
+    //   .from('institution_content_history')
+    //   .insert(cardHistoryRows);
 
-    if (cardHistError) {
-      console.error('card history insert error:', cardHistError);
-      alert('카드 히스토리 저장 실패');
-      return;
-    }
+    // if (cardHistError) {
+    //   console.error('card history insert error:', cardHistError);
+    //   alert('카드 히스토리 저장 실패');
+    //   return;
+    // }
 
     // 3) 최신 상태 테이블(newsletter_meta) upsert
     const { error: metaError } = await supabase
