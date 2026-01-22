@@ -3,8 +3,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from './lib/supabaseClient';
 
-console.log('ENV CHECK', process.env.NEXT_PUBLIC_SUPABASE_URL);
-
 
 type CardField = 'title' | 'desc';
 
@@ -141,6 +139,7 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
+    console.log('ENV CHECK', process.env.NEXT_PUBLIC_SUPABASE_URL);
 
     (async () => {
       // 1) intro 불러오기
@@ -459,7 +458,7 @@ function CardItem({ item, isEditing, onTextChange, onImageChange }: CardComponen
             className="card__title editableTextarea"
             value={item.title}
             rows={2}
-            onChange={(e) => onTextChange(item.id, 'title', e.target.value)}
+            onChange={(e) => onTextChange(item.id, 'desc', e.target.value)}
           />
         ) : (
           <h3 className="card__title">{item.title}</h3>
