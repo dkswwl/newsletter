@@ -452,7 +452,7 @@ function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardComp
               className="card__title editableTextarea"
               value={item.title}
               rows={2}
-              onChange={(e) => onTextChange(item.id, 'desc', e.target.value)}
+              onChange={(e) => onTextChange(item.id, 'title', e.target.value)}
             />
           ) : (
             <h3 className="card__title">{item.title}</h3>
@@ -500,7 +500,7 @@ function CardItem({ item, isEditing, onTextChange, onImageChange }: CardComponen
             className="card__title editableTextarea"
             value={item.title}
             rows={2}
-            onChange={(e) => onTextChange(item.id, 'desc', e.target.value)}
+            onChange={(e) => onTextChange(item.id, 'title', e.target.value)}
           />
         ) : (
           <h3 className="card__title">{item.title}</h3>
