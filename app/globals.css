@@ -157,6 +157,7 @@
   width: fit-content;
 }
 
+/* 한국형 ARPA-H 프로젝트 필수의료 임무 과제 */
 .intro__badge--small {
   padding: 13px 30px 7px 30px;
   border-radius: 20px 20px 0 0;
@@ -164,31 +165,79 @@
   font-weight: 700;
 }
 
+/* SARAM-H 연구단 News Letter */
 .intro__badge--big {
   padding: 13px 30px 13px 30px;
   border-radius: 0 20px 20px 20px;
-  font-size: 75px;
+  font-size: 70px;
   font-weight: 800;
   display: inline-block;
 }
 
+/* VOL.1 */
 .intro__version {
   position: absolute;
-  top: 145px;
-  left: 781px;
+  top: 130px;
+  left: 975px;
   background-color: #FFE614;
   color: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
   transform: rotate(10deg);
-  padding: 13px 30px;
+  padding: 11px 30px;
   border-radius: 999px;
-  font-size: 50px;
+  font-size: 47px;
   font-weight: 900;
   border: 5px solid #000000;
   z-index: 30;
 }
+
+/* 주관 */
+.intro__host {
+  position: absolute;
+  top: 317px;
+  left: 928px;
+  color: #0066ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 400;
+  z-index: 30;
+}
+
+.intro__host2 {
+  position: absolute;
+  top: 340px;
+  left: 998px;
+  color: #0066ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 400;
+  z-index: 31;
+}
+
+/* 로봇 이미지 */
+.intro__robotImage {
+  position: absolute;
+  top: 525px;
+  left: 630px;
+
+  width: 700px;
+  z-index: 50;
+
+  pointer-events: none;
+}
+
+.intro__robotImage img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 
 .intro__panel {
   position: absolute;

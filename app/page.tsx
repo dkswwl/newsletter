@@ -316,11 +316,22 @@ export default function Home() {
       <section className="pageSection">
         <div className="figmaCanvas figmaCanvas--intro shadow-2xl" data-content="Subproject1">
           <div className="intro__label">
-            <div className="intro__badge intro__badge--small">한국형 ARPA-H 프로젝트</div>
-            <div className="intro__badge intro__badge--big">SARAM-H 뉴스레터</div>
+            <div className="intro__badge intro__badge--small">한국형 ARPA-H 프로젝트 필수의료 임무 과제</div>
+            <div className="intro__badge intro__badge--big">SARAM-H 연구단 News Letter</div>
           </div>
 
           <div className="intro__version">VOL.1</div>
+
+          <div className="intro__host">주관 양산부산대학교병원</div>
+          <div className="intro__host2">(연구개발기관)</div>
+
+          <div className="intro__robotImage">
+            <img
+              src="/images/introRobot.png"
+              alt="robot illustration"
+            />
+          </div>
+
 
           <div className="intro__panel">
             <div className="intro__textBox">
