@@ -92,17 +92,6 @@ function applyBlueBoldToggle() {
   sel.addRange(newRange);
 }
 
-function handleEditorKeyDown(e: React.KeyboardEvent<HTMLElement>) {
-  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-  const modKey = isMac ? e.metaKey : e.ctrlKey;
-
-  // Ctrl/Cmd + B
-  if (modKey && (e.key === 'b' || e.key === 'B')) {
-    e.preventDefault(); // 기본 bold 막기
-    applyBlueBoldToggle(); // ✅ Blue Bold 토글 실행
-  }
-}
-
 
 const INITIAL_CARDS: CardItemData[] = [
   {
@@ -456,16 +445,6 @@ export default function Home() {
               ) : (
                 <p className="intro__textDisplay">{introText}</p>
               )}
-
-              <div
-                className="richEditor"
-                contentEditable={isEditing}
-                suppressContentEditableWarning
-                onKeyDown={isEditing ? handleEditorKeyDown : undefined}
-                onInput={(e) => onTextChange(item.id, 'desc', (e.currentTarget as HTMLElement).innerHTML)}
-                dangerouslySetInnerHTML={{ __html: item.desc }}
-              />
-
             </div>
 
             <div className="intro__labOverview">
@@ -668,7 +647,10 @@ function CardItem({ item, isEditing, onTextChange, onImageChange }: CardComponen
               // 현재 문자열을 HTML로 렌더
               dangerouslySetInnerHTML={{ __html: item.desc }}
               // 입력될 때마다 HTML 저장
-              onInput={(e) => onTextChange(item.id, 'desc', e.currentTarget.innerHTML)}
+              onInput={(e) =>
+                onTextChange(item.id, 'desc', (e.currentTarget as HTMLElement).innerHTML)
+              }
+
             />
           </div>
         ) : (
