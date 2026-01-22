@@ -35,6 +35,75 @@ const STORAGE_KEYS = {
   cards: 'card-content-data-total',
 } as const;
 
+
+function applyBlueBoldToggle() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+
+  const range = sel.getRangeAt(0);
+  if (range.collapsed) return;
+
+  // ✅ 선택 영역이 이미 blue-bold span 안에 있는지 검사 (시작점 기준)
+  const startNode = range.startContainer;
+  const startEl =
+    startNode.nodeType === Node.ELEMENT_NODE
+      ? (startNode as Element)
+      : (startNode.parentElement as Element | null);
+
+  const blueSpan = startEl?.closest?.('span[data-bluebold="1"]') as HTMLElement | null;
+
+  // =========================
+  // 1) 이미 BlueBold 상태면 -> 풀기(unwrap)
+  // =========================
+  if (blueSpan) {
+    const parent = blueSpan.parentNode;
+    if (!parent) return;
+
+    // span 안의 자식들을 span 밖으로 이동
+    while (blueSpan.firstChild) parent.insertBefore(blueSpan.firstChild, blueSpan);
+
+    // span 제거
+    parent.removeChild(blueSpan);
+
+    // selection 정리(UX)
+    sel.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.setStart(parent, Math.min(parent.childNodes.length, 0));
+    sel.addRange(newRange);
+
+    return;
+  }
+
+  // =========================
+  // 2) 아니면 -> 감싸기(wrap)
+  // =========================
+  const span = document.createElement('span');
+  span.setAttribute('data-bluebold', '1');
+  span.style.fontWeight = '700';
+  span.style.color = 'var(--main-blue)';
+
+  span.appendChild(range.extractContents());
+  range.insertNode(span);
+
+  // 커서 위치 정리(UX)
+  sel.removeAllRanges();
+  const newRange = document.createRange();
+  newRange.setStartAfter(span);
+  sel.addRange(newRange);
+}
+
+function handleEditorKeyDown(e: React.KeyboardEvent<HTMLElement>) {
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+  const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+  // Ctrl/Cmd + B
+  if (modKey && (e.key === 'b' || e.key === 'B')) {
+    e.preventDefault(); // 기본 bold 막기
+    applyBlueBoldToggle(); // ✅ Blue Bold 토글 실행
+  }
+}
+
+
 const INITIAL_CARDS: CardItemData[] = [
   {
     id: 1,
@@ -328,7 +397,7 @@ export default function Home() {
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen bg-slate-900 flex flex-col items-center">
+    <main className={`min-h-screen bg-slate-900 flex flex-col items-center ${isEditing ? 'isEditing' : ''}`}>
       {/* Control 버튼 */}
       <div className="editControlBar">
         {/* 출력하기 */}
@@ -387,6 +456,16 @@ export default function Home() {
               ) : (
                 <p className="intro__textDisplay">{introText}</p>
               )}
+
+              <div
+                className="richEditor"
+                contentEditable={isEditing}
+                suppressContentEditableWarning
+                onKeyDown={isEditing ? handleEditorKeyDown : undefined}
+                onInput={(e) => onTextChange(item.id, 'desc', (e.currentTarget as HTMLElement).innerHTML)}
+                dangerouslySetInnerHTML={{ __html: item.desc }}
+              />
+
             </div>
 
             <div className="intro__labOverview">
@@ -565,15 +644,38 @@ function CardItem({ item, isEditing, onTextChange, onImageChange }: CardComponen
         </div>
 
         {isEditing ? (
-          <textarea
-            className="card__content editableTextarea"
-            value={item.desc}
-            rows={6}
-            onChange={(e) => onTextChange(item.id, 'desc', e.target.value)}
-          />
+          <div className="richEditor">
+            {/* 툴바: Bold */}
+            <div className="richEditor__toolbar">
+              <button
+                type="button"
+                className="richEditor__btn"
+                onMouseDown={(e) => {
+                  e.preventDefault(); // ✅ selection 유지
+                  applyBlueBoldToggle();
+                }}
+              >
+                Bold
+              </button>
+
+            </div>
+
+            {/* 에디터 본문 */}
+            <div
+              className="card__content richEditor__content"
+              contentEditable
+              suppressContentEditableWarning
+              // 현재 문자열을 HTML로 렌더
+              dangerouslySetInnerHTML={{ __html: item.desc }}
+              // 입력될 때마다 HTML 저장
+              onInput={(e) => onTextChange(item.id, 'desc', e.currentTarget.innerHTML)}
+            />
+          </div>
         ) : (
-          <p className="card__content">{item.desc}</p>
+          // 읽기 모드: 저장된 HTML을 그대로 렌더
+          <div className="card__content" dangerouslySetInnerHTML={{ __html: item.desc }} />
         )}
+
       </div>
     </div>
   );

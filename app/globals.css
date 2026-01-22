@@ -69,14 +69,14 @@
 
 .editControlBar {
   position: fixed;
-  top: 50px;
-  right: 50px;
+  top: 45px;
+  right: 45px;
   left: auto;
   transform: none;
   z-index: 9999;
 
   display: flex;
-  gap: 20px;
+  gap: 18px;
 
   flex-wrap: nowrap;
   white-space: nowrap;
@@ -107,6 +107,19 @@
 
 .editBtn__icon {
   font-size: 18px;
+}
+
+.editBtn--gray {
+  background: #acacad;
+  /* slate-700 */
+  color: #ffffff;
+}
+
+.editBtn--gray:hover {
+  background: #1f2937;
+  /* slate-800 */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .editBtn--blue {
@@ -155,6 +168,7 @@
   box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
 }
 
+
 /* =========================
    Intro (Page 1)
 ========================= */
@@ -195,8 +209,8 @@
 /* VOL.1 */
 .intro__version {
   position: absolute;
-  top: 130px;
-  left: 975px;
+  top: 135px;
+  left: 977px;
   background-color: #FFE614;
   color: #000000;
   display: flex;
@@ -205,16 +219,16 @@
   transform: rotate(10deg);
   padding: 11px 30px;
   border-radius: 999px;
-  font-size: 47px;
+  font-size: 42px;
   font-weight: 900;
-  border: 5px solid #000000;
+  border: 4px solid #000000;
   z-index: 30;
 }
 
 /* 주관 */
 .intro__host {
   position: absolute;
-  top: 317px;
+  top: 313px;
   left: 928px;
   color: #0066ff;
   display: flex;
@@ -227,7 +241,7 @@
 
 .intro__host2 {
   position: absolute;
-  top: 340px;
+  top: 335px;
   left: 998px;
   color: #0066ff;
   display: flex;
@@ -259,7 +273,7 @@
 
 .intro__panel {
   position: absolute;
-  top: 316px;
+  top: 313px;
   left: 85px;
   width: 787px;
   height: 655px;
@@ -447,11 +461,18 @@
   margin: 0;
 }
 
-/* hover dim */
-.card__imageWrap:hover .card__image {
+
+/* ✅ 수정 모드에서만 hover dim */
+.isEditing .card__imageWrap:hover .card__image {
   filter: brightness(0.8);
   transition: filter 0.3s ease;
 }
+
+/* ✅ 수정 모드 아닐 때는 항상 원래 밝기 */
+.card__image {
+  filter: none;
+}
+
 
 /* edit button position wrapper */
 .card__imageEditWrap {
@@ -460,6 +481,7 @@
   right: 23px;
   z-index: 50;
 }
+
 
 /* =========================
    Image Edit Button
@@ -585,4 +607,52 @@
 .card__icon--wide {
   width: 48px;
   height: 48px;
+}
+
+
+/* =========================
+   Rich Editor (Bold only)
+========================= */
+
+.richEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.richEditor__toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.richEditor__btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--main-blue);
+  background: #ffffff;
+  color: var(--main-blue);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.richEditor__btn:hover {
+  background: rgba(0, 102, 255, 0.08);
+}
+
+.richEditor__content {
+  min-height: 180px;
+  /* textarea rows 대체 느낌 */
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 1px dashed var(--main-blue);
+  background: rgba(0, 102, 255, 0.05);
+  outline: none;
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+
+.richEditor__content:focus {
+  background: #ffffff;
+  border: 1px solid var(--main-blue);
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
 }
