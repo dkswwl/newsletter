@@ -225,13 +225,14 @@ export default function Home() {
     // 2) 기관 카드 히스토리 기록 (배치 insert)
     const cardHistoryRows = cardData.map((c) => ({
       institution_id: c.id,
-      lab: c.lab,
-      title: c.title,
-      content: c.desc,        // UI desc -> history content
-      main_image: c.mainImage,
-      edited_by: editedBy ?? c.lab,  // 작성자 미입력 시 기관명으로라도 남김(원하면 null로 바꿔도 됨)
+      lab: c.lab ?? '(unknown)',
+      title: c.title ?? '',
+      content: c.desc ?? '',
+      main_image: c.mainImage ?? 'neuromeka.png',
+      edited_by: editedBy ?? c.lab ?? null,
       edited_at: new Date().toISOString(),
     }));
+
 
     const { error: cardHistError } = await supabase
       .from('institution_content_history')
