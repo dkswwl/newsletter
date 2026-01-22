@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from './lib/supabaseClient';
 
+import * as htmlToImage from 'html-to-image';
+
 
 type CardField = 'title' | 'desc';
 
@@ -38,7 +40,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 1,
     lab: "양산부산대학교병원",
     bgImage: "lab-bg_1-01.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Zigzag.png"
@@ -47,7 +49,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 2,
     lab: "뉴로메카",
     bgImage: "lab-bg_2-01.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Flower.png"
@@ -56,7 +58,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 3,
     lab: "부산대 응용로봇연구실",
     bgImage: "lab-bg_2-02.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Peanut.png"
@@ -65,7 +67,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 4,
     lab: "부산대 인터랙티브로보틱스연구실",
     bgImage: "lab-bg_2-03.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Diagonal.png"
@@ -74,7 +76,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 5,
     lab: "KAIST 지능형로봇시스템연구실",
     bgImage: "lab-bg_2-04.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Zigzag.png"
@@ -83,7 +85,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 6,
     lab: "부산대 시각지능및인지연구실",
     bgImage: "lab-bg_3-01.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Flower.png"
@@ -92,7 +94,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 7,
     lab: "부산대 컴퓨터비전연구실",
     bgImage: "lab-bg_3-02.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Peanut.png"
@@ -101,7 +103,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 8,
     lab: "퍼즐에이아이",
     bgImage: "lab-bg_3-03.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Diagonal.png"
@@ -110,7 +112,7 @@ const INITIAL_CARDS: CardItemData[] = [
     id: 9,
     lab: "한국전자통신연구원",
     bgImage: "lab-bg_3-04.svg",
-    mainImage: "neuromeka.png",
+    mainImage: "default.png",
     title: "소제목",
     desc: "내용을 입력하세요.",
     icon: "Zigzag.png"
@@ -187,6 +189,33 @@ export default function Home() {
   }, []);
 
 
+  // 출력하기
+  const handleExport = async () => {
+    const pages = document.querySelectorAll('.pageSection');
+
+    for (let i = 0; i < pages.length; i++) {
+      const node = pages[i] as HTMLElement;
+
+      try {
+        const dataUrl = await htmlToImage.toPng(node, {
+          pixelRatio: 2,
+          backgroundColor: '#ffffff',
+        });
+
+        const link = document.createElement('a');
+        link.download = `newsletter_page_${i + 1}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        console.error('export failed:', err);
+        alert(`페이지 ${i + 1} 출력 실패`);
+        return;
+      }
+    }
+  };
+
+
+  // 수정하기
   const handleTextChange = (id: number, field: CardField, value: string) => {
     setCardData((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   };
@@ -287,6 +316,7 @@ export default function Home() {
 
 
 
+
   const { wideCard, page2, page3 } = useMemo(() => {
     return {
       wideCard: cardData[0],
@@ -299,18 +329,30 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-900 flex flex-col items-center">
-      {/* 수정/저장 버튼 */}
+      {/* Control 버튼 */}
       <div className="editControlBar">
+        {/* 출력하기 */}
+        <button
+          onClick={handleExport}
+          className="editBtn editBtn--gray"
+        >
+          <span className="editBtn__icon">🖨️</span>
+          출력하기
+        </button>
+
         {!isEditing ? (
           <button onClick={() => setIsEditing(true)} className="editBtn editBtn--blue">
-            <span className="editBtn__icon">✏️</span> 수정하기
+            <span className="editBtn__icon">✏️</span>
+            수정하기
           </button>
         ) : (
           <button onClick={handleSave} className="editBtn editBtn--green">
-            <span className="editBtn__icon">✅</span> 저장하기
+            <span className="editBtn__icon">✅</span>
+            저장하기
           </button>
         )}
       </div>
+
 
       {/* 1p */}
       <section className="pageSection">
