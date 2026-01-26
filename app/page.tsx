@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from './lib/supabaseClient';
 
 import * as htmlToImage from 'html-to-image';
@@ -18,11 +18,16 @@ type CardItemData = {
   icon: string;
 };
 
-type CardComponentProps = {
+type BaseCardProps = {
   item: CardItemData;
   isEditing: boolean;
   onTextChange: (id: number, field: CardField, value: string) => void;
   onImageChange: (file: File | null) => void;
+};
+
+type CardItemProps = BaseCardProps & {
+  isComposing: boolean;
+  setIsComposing: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 type LabGroupProps = {
@@ -36,6 +41,9 @@ const STORAGE_KEYS = {
 } as const;
 
 
+// =========================
+// BlueBold
+// =========================
 function applyBlueBoldToggle() {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return;
@@ -90,6 +98,15 @@ function applyBlueBoldToggle() {
   const newRange = document.createRange();
   newRange.setStartAfter(span);
   sel.addRange(newRange);
+}
+
+
+// =========================
+// List
+// =========================
+function toggleBulletPoint() {
+  // 브라우저의 내장 리스트 생성 명령 실행
+  document.execCommand('insertUnorderedList', false);
 }
 
 
@@ -197,6 +214,7 @@ export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [editorName, setEditorName] = useState('');
+  const [isComposing, setIsComposing] = useState(false);
 
 
   useEffect(() => {
@@ -373,8 +391,6 @@ export default function Home() {
   };
 
 
-
-
   const { wideCard, page2, page3 } = useMemo(() => {
     return {
       wideCard: cardData[0],
@@ -437,7 +453,7 @@ export default function Home() {
             <div className="intro__textBox">
               {isEditing ? (
                 <textarea
-                  className="editableTextarea intro__text"
+                  className="intro__text editableTextarea"
                   value={introText}
                   onChange={(e) => setIntroText(e.target.value)}
                   placeholder="내용을 입력하세요."
@@ -463,6 +479,8 @@ export default function Home() {
               isEditing={isEditing}
               onTextChange={handleTextChange}
               onImageChange={(file: File | null) => handleImageChange(wideCard.id, file)}
+              isComposing={isComposing}
+              setIsComposing={setIsComposing}
             />
           </div>
         </div>
@@ -479,6 +497,8 @@ export default function Home() {
                 isEditing={isEditing}
                 onTextChange={handleTextChange}
                 onImageChange={(file: File | null) => handleImageChange(item.id, file)}
+                isComposing={isComposing}
+                setIsComposing={setIsComposing}
               />
             ))}
           </div>
@@ -496,6 +516,8 @@ export default function Home() {
                 isEditing={isEditing}
                 onTextChange={handleTextChange}
                 onImageChange={(file: File | null) => handleImageChange(item.id, file)}
+                isComposing={isComposing}
+                setIsComposing={setIsComposing}
               />
             ))}
           </div>
@@ -541,11 +563,37 @@ function ImageEditButton({ isEditing, onFile }: { isEditing: boolean; onFile: (f
   );
 }
 
-function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardComponentProps) {
+function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardItemProps) {
+  const [isColumnMode, setIsColumnMode] = useState(false);
+  const editorRef1 = useRef<HTMLDivElement>(null);
+  const editorRef2 = useRef<HTMLDivElement>(null);
+
+  const handleToggleColumn = () => {
+    if (isColumnMode) {
+      const leftContent = editorRef1.current?.innerHTML || '';
+      const rightContent = editorRef2.current?.innerHTML || '';
+      const combined = leftContent + (rightContent ? `<br/>${rightContent}` : '');
+      onTextChange(item.id, 'desc', combined);
+    }
+    setIsColumnMode(!isColumnMode);
+  };
+
+  const applyCommand = (commandFn: () => void) => {
+    commandFn();
+    requestAnimationFrame(() => {
+      if (!isColumnMode && editorRef1.current) {
+        onTextChange(item.id, 'desc', editorRef1.current.innerHTML);
+      }
+    });
+  };
+
   return (
     <div className="card card--wide">
       <div className="card__top">
-        <div className="card__labHeader" style={{ backgroundImage: `url('/images/${item.bgImage}')` }}>
+        <div
+          className="card__labHeader"
+          style={{ backgroundImage: `url('/images/${item.bgImage}')` }}
+        >
           <span className="card__labBadge">{item.lab}</span>
         </div>
 
@@ -559,6 +607,7 @@ function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardComp
 
       <div className="card__bottom card__bottom--wide">
         <div className="card__bottomInner">
+          {/* Title */}
           {isEditing ? (
             <textarea
               className="card__title editableTextarea"
@@ -570,36 +619,137 @@ function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardComp
             <h3 className="card__title">{item.title}</h3>
           )}
 
-          <div className="card__iconBox card__iconBox--wide">
-            <img src={`/icons/${item.icon}`} alt="icon" className="card__icon card__icon--wide" />
-          </div>
+          {/* ✅ 아이콘(또는 툴바) + 콘텐츠 묶음 */}
+          <div className="wideBody">
 
-          {isEditing ? (
-            <textarea
-              className="card__desc editableTextarea"
-              value={item.desc}
-              rows={6}
-              onChange={(e) => onTextChange(item.id, 'desc', e.target.value)}
-            />
-          ) : (
-            <p className="card__desc">{item.desc}</p>
-          )}
+
+            {/* ✅ Icon ↔ Toolbar (desc보다 위, 동일 height 슬롯) */}
+            <div className="card__actionSlot">
+              {isEditing ? (
+                <div className="richEditor__toolbar">
+                  <button
+                    type="button"
+                    className="richEditor__btn"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      applyCommand(applyBlueBoldToggle);
+                    }}
+                  >
+                    Bold
+                  </button>
+
+
+                  <button
+                    type="button"
+                    className="richEditor__btn"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      applyCommand(toggleBulletPoint);
+                    }}
+                  >
+                    List
+                  </button>
+
+
+                  <button
+                    type="button"
+                    className={`richEditor__btn ${isColumnMode ? 'active' : ''}`}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleToggleColumn();
+                    }}
+                  >
+                    {isColumnMode ? '1단' : '2단'}
+                  </button>
+                </div>
+              ) : (
+                <div className="card__iconBox card__iconBox--wide">
+                  <img
+                    src={`/icons/${item.icon}`}
+                    alt="icon"
+                    className="card__icon card__icon--wide"
+                  />
+                </div>
+              )}
+            </div>
+
+
+            {/* ✅ Desc / Editor (아래) */}
+            <div className={`wide-editor-container ${isColumnMode ? 'split-view' : ''}`}>
+              <div className="editor-wrapper">
+                {isEditing ? (
+                  <div
+                    ref={editorRef1}
+                    className="richEditor__content"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={(e) => onTextChange(item.id, 'desc', e.currentTarget.innerHTML)}
+                    dangerouslySetInnerHTML={{ __html: item.desc }}
+                  />
+                ) : (
+                  <div className="card__desc" dangerouslySetInnerHTML={{ __html: item.desc }} />
+                )}
+              </div>
+
+
+              {isColumnMode && (
+                <div className="editor-wrapper">
+                  {isEditing ? (
+                    <div
+                      ref={editorRef2}
+                      className="richEditor__content"
+                      contentEditable
+                      suppressContentEditableWarning
+                    />
+                  ) : (
+                    <div className="card__desc" />
+                  )}
+                </div>
+              )}
+            </div>
+
+
+          </div>
+          {/* wideBody end */}
         </div>
       </div>
     </div>
   );
 }
 
-function CardItem({ item, isEditing, onTextChange, onImageChange }: CardComponentProps) {
+
+function CardItem({
+  item,
+  isEditing,
+  onTextChange,
+  onImageChange,
+  isComposing,
+  setIsComposing,
+}: CardItemProps) {
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isEditing && editorRef.current && editorRef.current.innerHTML !== item.desc) {
+      editorRef.current.innerHTML = item.desc;
+    }
+  }, [isEditing, item.desc]);
+
   return (
     <div className="card">
       <div className="card__top">
-        <div className="card__labHeader" style={{ backgroundImage: `url('/images/${item.bgImage}')` }}>
+        <div
+          className="card__labHeader"
+          style={{ backgroundImage: `url('/images/${item.bgImage}')` }}
+        >
           <span className="card__labBadge">{item.lab}</span>
         </div>
 
         <div className="card__imageWrap group">
-          <img src={resolveImageSrc(item.mainImage)} alt={item.lab} className="card__image" />
+          <img
+            src={resolveImageSrc(item.mainImage)}
+            alt={item.lab}
+            className="card__image"
+          />
           <div className="card__imageEditWrap">
             <ImageEditButton isEditing={isEditing} onFile={onImageChange} />
           </div>
@@ -607,6 +757,7 @@ function CardItem({ item, isEditing, onTextChange, onImageChange }: CardComponen
       </div>
 
       <div className="card__bottom">
+        {/* Title */}
         {isEditing ? (
           <textarea
             className="card__title editableTextarea"
@@ -618,46 +769,71 @@ function CardItem({ item, isEditing, onTextChange, onImageChange }: CardComponen
           <h3 className="card__title">{item.title}</h3>
         )}
 
-        <div className="card__iconBox">
-          <img src={`/icons/${item.icon}`} alt="icon" className="card__icon" />
-        </div>
 
-        {isEditing ? (
-          <div className="richEditor">
-            {/* 툴바: Bold */}
+        {/* ✅ 아래로 밀어주는 스페이서 */}
+        <div className="card__spacer" />
+
+
+        {/* ✅ Icon ↔ Toolbar (always bottom) */}
+        <div className="card__actionSlot">
+          {isEditing ? (
             <div className="richEditor__toolbar">
               <button
                 type="button"
                 className="richEditor__btn"
                 onMouseDown={(e) => {
-                  e.preventDefault(); // ✅ selection 유지
+                  e.preventDefault();
+                  toggleBulletPoint();
+                  requestAnimationFrame(() => {
+                    if (editorRef.current) onTextChange(item.id, 'desc', editorRef.current.innerHTML);
+                  });
+                }}
+              >
+                List
+              </button>
+
+
+              <button
+                type="button"
+                className="richEditor__btn"
+                onMouseDown={(e) => {
+                  e.preventDefault();
                   applyBlueBoldToggle();
+                  requestAnimationFrame(() => {
+                    if (editorRef.current) onTextChange(item.id, 'desc', editorRef.current.innerHTML);
+                  });
                 }}
               >
                 Bold
               </button>
-
             </div>
+          ) : (
+            <div className="card__iconBox">
+              <img src={`/icons/${item.icon}`} alt="icon" className="card__icon" />
+            </div>
+          )}
+        </div>
 
-            {/* 에디터 본문 */}
-            <div
-              className="card__content richEditor__content"
-              contentEditable
-              suppressContentEditableWarning
-              // 현재 문자열을 HTML로 렌더
-              dangerouslySetInnerHTML={{ __html: item.desc }}
-              // 입력될 때마다 HTML 저장
-              onInput={(e) =>
-                onTextChange(item.id, 'desc', (e.currentTarget as HTMLElement).innerHTML)
-              }
-
-            />
-          </div>
+        {/* ✅ Body (Editor ↔ Read) */}
+        {isEditing ? (
+          <div
+            ref={editorRef}
+            className="card__content richEditor__content"
+            contentEditable
+            suppressContentEditableWarning
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={(e) => {
+              setIsComposing(false);
+              onTextChange(item.id, 'desc', e.currentTarget.innerHTML);
+            }}
+            onInput={(e) => {
+              if (isComposing) return;
+              onTextChange(item.id, 'desc', e.currentTarget.innerHTML);
+            }}
+          />
         ) : (
-          // 읽기 모드: 저장된 HTML을 그대로 렌더
-          <div className="card__content" dangerouslySetInnerHTML={{ __html: item.desc }} />
+          <div className="card__desc" dangerouslySetInnerHTML={{ __html: item.desc }} />
         )}
-
       </div>
     </div>
   );

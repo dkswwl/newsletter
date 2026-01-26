@@ -8,10 +8,9 @@
   --main-blue: #0066FF;
 }
 
-/* =========================
-   Canvas / Page
-========================= */
-
+/* =========================================================
+   0) Base Layout
+========================================================= */
 .figmaCanvas {
   width: 1920px;
   height: 1080px;
@@ -29,7 +28,7 @@
   justify-content: center;
   flex-shrink: 0;
   margin-bottom: 50px;
-  background-color: #ffffff;
+  background: #fff;
   border-radius: 40px;
 }
 
@@ -47,32 +46,27 @@
   font-weight: 900;
   white-space: nowrap;
   color: var(--main-blue);
-  opacity: 0.10;
+  opacity: .10;
   -webkit-text-stroke: 2px var(--main-blue);
   z-index: 0;
   pointer-events: none;
 }
 
-/* Intro 캔버스만 글자 크기 다르게 */
 .figmaCanvas--intro::before {
   font-size: 150px;
   top: 30px;
   left: 50%;
   transform: none;
-  opacity: 0.10;
+  opacity: .10;
 }
 
-
-/* =========================
-   Edit Button (Fixed)
-========================= */
-
+/* =========================================================
+   1) Edit Control Bar
+========================================================= */
 .editControlBar {
   position: fixed;
   top: 45px;
   right: 45px;
-  left: auto;
-  transform: none;
   z-index: 9999;
 
   display: flex;
@@ -91,7 +85,7 @@
   border-radius: 999px;
   font-weight: 600;
   font-size: 18px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all .2s cubic-bezier(.4, 0, .2, 1);
 
   display: inline-flex;
   align-items: center;
@@ -111,68 +105,63 @@
 
 .editBtn--gray {
   background: #acacad;
-  /* slate-700 */
-  color: #ffffff;
+  color: #fff;
 }
 
 .editBtn--gray:hover {
   background: #1f2937;
-  /* slate-800 */
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
 }
 
 .editBtn--blue {
   background: var(--main-blue);
-  color: #ffffff;
+  color: #fff;
 }
 
 .editBtn--blue:hover {
   background: #0052cc;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, .3);
 }
 
 .editBtn--green {
   background: #10B981;
-  color: #ffffff;
+  color: #fff;
 }
 
 .editBtn--green:hover {
   background: #059669;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, .3);
 }
 
-
-/* =========================
-   Editable textarea (shared)
-========================= */
-
+/* =========================================================
+   2) Shared Editable Styles (textarea / contentEditable)
+========================================================= */
 .editableTextarea {
   width: 100%;
-  background: rgba(0, 102, 255, 0.05) !important;
-  border: 1px dashed var(--main-blue) !important;
-  border-radius: 12px !important;
-  padding: 10px 15px !important;
+  background: rgba(0, 102, 255, .05);
+  border: 1px dashed var(--main-blue);
+  border-radius: 10px;
+  padding: 10px 15px;
+
   outline: none;
   resize: none;
-  transition: all 0.2s ease;
+  transition: all .2s ease;
   font-family: 'SUIT', sans-serif;
   box-sizing: border-box;
 }
 
 .editableTextarea:focus {
-  background: #ffffff !important;
+  background: #fff !important;
   border: 1px solid var(--main-blue) !important;
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, .1);
 }
 
-
-/* =========================
-   Intro (Page 1)
-========================= */
-
+/* =========================================================
+   3) Intro (Page 1)
+========================================================= */
 .intro__label {
   position: absolute;
   top: 120px;
@@ -184,12 +173,11 @@
 }
 
 .intro__badge {
-  background-color: var(--main-blue);
-  color: #ffffff;
+  background: var(--main-blue);
+  color: #fff;
   width: fit-content;
 }
 
-/* 한국형 ARPA-H 프로젝트 필수의료 임무 과제 */
 .intro__badge--small {
   padding: 13px 30px 7px 30px;
   border-radius: 20px 20px 0 0;
@@ -197,43 +185,41 @@
   font-weight: 700;
 }
 
-/* SARAM-H 연구단 News Letter */
 .intro__badge--big {
-  padding: 13px 30px 13px 30px;
+  padding: 13px 30px;
   border-radius: 0 20px 20px 20px;
   font-size: 70px;
   font-weight: 800;
   display: inline-block;
 }
 
-/* VOL.1 */
 .intro__version {
   position: absolute;
   top: 135px;
   left: 977px;
-  background-color: #FFE614;
-  color: #000000;
+  background: #FFE614;
+  color: #000;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   transform: rotate(10deg);
   padding: 11px 30px;
   border-radius: 999px;
+
   font-size: 42px;
   font-weight: 900;
-  border: 4px solid #000000;
+  border: 4px solid #000;
+
   z-index: 30;
 }
 
-/* 주관 */
 .intro__host {
   position: absolute;
   top: 313px;
   left: 928px;
   color: #0066ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 18px;
   font-weight: 400;
   z-index: 30;
@@ -244,23 +230,17 @@
   top: 335px;
   left: 998px;
   color: #0066ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 18px;
   font-weight: 400;
   z-index: 31;
 }
 
-/* 로봇 이미지 */
 .intro__robotImage {
   position: absolute;
   top: 525px;
   left: 630px;
-
   width: 700px;
   z-index: 50;
-
   pointer-events: none;
 }
 
@@ -270,7 +250,6 @@
   display: block;
 }
 
-
 .intro__panel {
   position: absolute;
   top: 313px;
@@ -278,43 +257,68 @@
   width: 787px;
   height: 655px;
 
-  background-color: var(--main-blue);
-  background-image: radial-gradient(rgba(255, 255, 255, 0.5) 2.5px, transparent 2.5px);
+  background: var(--main-blue);
+  background-image: radial-gradient(rgba(255, 255, 255, .5) 2.5px, transparent 2.5px);
   background-size: 40px 40px;
 
   border-radius: 40px;
   padding: 13px 16px 0 16px;
+
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
+
   overflow: hidden;
   z-index: 10;
 }
 
 .intro__textBox {
   width: 100%;
-  min-height: 100px;
-  margin-bottom: auto;
-  background-color: #ffffff;
-  border-radius: 25px;
-  padding: 30px 40px;
+  height: 375px;
+
   display: flex;
   flex-direction: column;
+
+  background: #fff;
+  border-radius: 25px;
+  padding: 30px 40px;
+
   box-sizing: border-box;
+  overflow: hidden;
 }
 
-.intro__text,
 .intro__textDisplay {
+  padding: 10px 15px;
+  width: 100%;
+  box-sizing: border-box;
+
+  font-size: 18px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.intro__text.editableTextarea {
   font-family: 'SUIT', sans-serif;
   font-size: 18px;
   font-weight: 400;
-  color: #000000;
   line-height: 1.35;
-  word-break: keep-all;
+  color: #000;
+
   white-space: pre-wrap;
-  width: 100%;
+  word-break: keep-all;
+
+  padding: 10px 15px;
+  margin: 0;
   box-sizing: border-box;
+  width: 100%;
+
+  display: block;
+
+  border: none;
+  /* 텍스트 박스 안에서 border가 거슬리면 제거 */
+  outline: none;
+  resize: none;
 }
 
 .intro__labOverview {
@@ -334,7 +338,7 @@
 .intro__labTitle {
   font-size: 20px;
   font-weight: 800;
-  color: #ffffff;
+  color: #fff;
 }
 
 .intro__labList {
@@ -344,18 +348,19 @@
 }
 
 .intro__labPill {
-  background-color: #ffffff;
+  background: #fff;
   color: var(--main-blue);
   padding: 10px 20px;
   line-height: 1;
+
   width: fit-content;
   border-radius: 999px;
+
   font-weight: 700;
   font-size: 17px;
   white-space: nowrap;
 }
 
-/* wide card position */
 .intro__wideCardPos {
   position: absolute;
   top: 160px;
@@ -363,27 +368,29 @@
   z-index: 20;
 }
 
-/* =========================
-   Cards (Page 2,3)
-========================= */
-
+/* =========================================================
+   4) Cards Grid
+========================================================= */
 .cardGrid {
   position: absolute;
   top: 240px;
   left: 85px;
   display: flex;
-  flex-direction: row;
   gap: 10px;
   z-index: 10;
 }
 
-/* base card */
+/* =========================================================
+   5) Card Base (common)
+========================================================= */
 .card {
   width: 430px;
   height: 755px;
-  background-color: transparent;
+  background: transparent;
+
   display: flex;
   flex-direction: column;
+
   overflow: hidden;
   border-radius: 30px;
 }
@@ -393,23 +400,27 @@
   height: 840px;
 }
 
-/* top */
+/* ---- Card Top ---- */
 .card__top {
   width: 100%;
-  height: 380px;
-  background-color: transparent;
+  height: auto;
+  background: transparent;
+
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+
   padding-bottom: 0;
+  flex: 0 0 auto;
 }
 
-/* lab header */
 .card__labHeader {
   width: 100%;
   height: 100px;
+
   background-size: 430px auto;
   background-repeat: no-repeat;
+
   display: flex;
   align-items: center;
   padding-left: 25px;
@@ -417,33 +428,38 @@
 
 .card--wide .card__labHeader {
   background-size: 612px auto;
-  /* ✅ 와이드 전용 */
 }
 
 .card__labBadge {
-  background-color: #ffffff;
+  background: #fff;
   color: var(--main-blue);
+
   padding: 12px 25px;
   margin-left: -1px;
   margin-top: -10px;
+
   border-radius: 999px;
   font-weight: 700;
   font-size: 17px;
   white-space: nowrap;
+
   z-index: 2;
 }
 
-/* image wrap */
 .card__imageWrap {
-  background-color: var(--main-blue);
+  background: var(--main-blue);
   width: 100%;
   height: 270px;
+
   border-radius: 0 5px 0 0;
   box-sizing: border-box;
-  padding: 0 10px 0 10px;
+
+  padding: 0 10px;
   margin-top: -7px;
+
   display: flex;
   align-items: flex-end;
+
   position: relative;
   overflow: hidden;
 }
@@ -459,22 +475,40 @@
   border-radius: 23px 23px 0 0;
   padding: 0;
   margin: 0;
-}
 
-
-/* ✅ 수정 모드에서만 hover dim */
-.isEditing .card__imageWrap:hover .card__image {
-  filter: brightness(0.8);
-  transition: filter 0.3s ease;
-}
-
-/* ✅ 수정 모드 아닐 때는 항상 원래 밝기 */
-.card__image {
   filter: none;
 }
 
 
-/* edit button position wrapper */
+.card__spacer {
+  flex: 1;
+  min-height: 0;
+}
+
+.card__actionSlot {
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* 수정 모드 툴바가 슬롯 안에서만 보이게: 기존 richEditor__toolbar 마진 제거 */
+.card__actionSlot .richEditor__toolbar {
+  margin: 0;
+  /* 기존 0 0 10px 0 같은 거 무력화 */
+  height: 44px;
+  /* 슬롯과 동일 */
+  display: flex;
+  align-items: center;
+}
+
+
+/* Edit mode: hover dim */
+.isEditing .card__imageWrap:hover .card__image {
+  filter: brightness(.8);
+  transition: filter .3s ease;
+}
+
+/* Image edit button position */
 .card__imageEditWrap {
   position: absolute;
   top: 16px;
@@ -482,24 +516,22 @@
   z-index: 50;
 }
 
-
-/* =========================
-   Image Edit Button
-========================= */
-
+/* ---- Image Edit Button ---- */
 .imageEditBtn {
-  background-color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, .9);
   border: 1px solid var(--main-blue);
   padding: 6px 16px;
   border-radius: 999px;
+
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease-in-out;
+
+  transition: all .2s ease-in-out;
   cursor: pointer;
 
-  /* hover 시에만 보이게 */
   opacity: 0;
+  /* hover 시에만 */
 }
 
 .group:hover .imageEditBtn {
@@ -507,7 +539,7 @@
 }
 
 .imageEditBtn:hover {
-  background-color: var(--main-blue);
+  background: var(--main-blue);
   transform: scale(1.05);
 }
 
@@ -522,55 +554,49 @@
 }
 
 .imageEditBtn:hover .imageEditBtn__text {
-  color: #ffffff;
+  color: #fff;
 }
 
 .imageEditBtn__input {
   display: none;
 }
 
-/* bottom */
+/* ---- Card Bottom (common) ---- */
 .card__bottom {
-  padding: 10px 32px 30px 32px;
-  background-color: #ffffff;
+  height: auto;
+  padding: 20px 18px 30px 18px;
+  background: #fff;
+
   display: flex;
   flex-direction: column;
-  height: 100%;
-  flex-grow: 1;
-}
 
-.card__bottom--wide {
-  background-color: var(--main-blue);
-  padding: 0 10px 10px 10px;
   box-sizing: border-box;
-}
-
-.card__bottomInner {
-  background-color: #ffffff;
   flex: 1;
-  height: 100%;
-  border-radius: 0 0 23px 23px;
-  padding: 0 30px 30px 30px;
-  display: flex;
-  flex-direction: column;
+  min-height: 0;
 }
 
-/* title/desc */
+/* Title (read + edit share) */
 .card__title {
-  /* padding: 3px 0 0 0; */
+  margin: 0;
+  padding: 10px 15px;
+
   font-size: 27px;
   font-weight: 700;
   color: #1a1a1a;
-  line-height: 1.3;
+  line-height: 1.28;
+
+  box-sizing: border-box;
   white-space: pre-wrap;
   word-break: keep-all;
 }
 
+/* Read body */
 .card__desc {
-  font-size: 18px;
-  color: #000000;
-  line-height: 1.3;
+  font-size: 17px;
+  color: #000;
+  line-height: 1.30;
   font-weight: 400;
+
   white-space: pre-wrap;
   word-break: keep-all;
 
@@ -578,20 +604,20 @@
   overflow-y: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
+
+  padding: 10px 15px;
+  margin: 0;
+  /* width: 100%; */
+  box-sizing: border-box;
 }
 
-/* wide desc scroll */
-.card--wide .card__desc {
-  max-height: none;
-  overflow-y: auto;
-}
-
-/* icon */
+/* Icon (normal card) */
 .card__iconBox {
   margin-top: auto;
   display: flex;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 12px;
+  padding: 0 0 0 10px;
 }
 
 .card__icon {
@@ -600,20 +626,83 @@
   object-fit: contain;
 }
 
+/* =========================================================
+   6) Wide Card Bottom
+========================================================= */
+.card__bottom--wide {
+  background: var(--main-blue);
+  padding: 0 10px 10px 10px;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+}
+
+.card__bottomInner {
+  background: #fff;
+
+  display: flex;
+  flex-direction: column;
+
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+
+  border-radius: 0 0 23px 23px;
+  padding: 20px 18px 30px 18px;
+}
+
+/* Wide: 아이콘+툴바+콘텐츠 묶음 */
+.wideBody {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .card__iconBox--wide {
-  margin-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .card__icon--wide {
-  width: 48px;
-  height: 48px;
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
 }
 
+/* Wide editor container */
+.wide-editor-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 0;
 
-/* =========================
-   Rich Editor (Bold only)
-========================= */
+  flex: 1;
+  min-height: 0;
 
+  align-items: stretch;
+}
+
+.wide-editor-container.split-view {
+  gap: 30px;
+}
+
+.editor-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   7) Rich Editor
+========================================================= */
 .richEditor {
   display: flex;
   flex-direction: column;
@@ -623,36 +712,111 @@
 .richEditor__toolbar {
   display: flex;
   gap: 8px;
+  margin: 0 0 10px 0;
 }
 
 .richEditor__btn {
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--main-blue);
-  background: #ffffff;
+
+  background: #fff;
   color: var(--main-blue);
+
   font-weight: 700;
   cursor: pointer;
 }
 
 .richEditor__btn:hover {
-  background: rgba(0, 102, 255, 0.08);
+  background: rgba(0, 102, 255, .08);
 }
 
 .richEditor__content {
-  min-height: 180px;
-  /* textarea rows 대체 느낌 */
+  min-height: 0px;
   padding: 10px 15px;
-  border-radius: 12px;
+
+  border-radius: 10px;
   border: 1px dashed var(--main-blue);
-  background: rgba(0, 102, 255, 0.05);
+
+  background: rgba(0, 102, 255, .05);
   outline: none;
+
   white-space: pre-wrap;
   word-break: keep-all;
+
+  margin-top: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .richEditor__content:focus {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid var(--main-blue);
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, .1);
+}
+
+/* Lists (read + edit) */
+.card__desc ul,
+.richEditor__content ul {
+  margin: 7px 0;
+  padding-left: 22px;
+  list-style-type: disc;
+}
+
+.card__desc li,
+.richEditor__content li {
+  line-height: 1.3;
+  margin-bottom: 5px;
+  color: #000;
+}
+
+.card__desc li::marker,
+.richEditor__content li::marker {
+  color: var(--main-blue);
+}
+
+.card__desc li:last-child,
+.richEditor__content li:last-child {
+  margin-bottom: 0 !important;
+}
+
+.richEditor__content ul:last-child {
+  margin-bottom: 0;
+}
+
+/* =========================================================
+   8) Edit Mode Overrides
+========================================================= */
+/* 타이틀 textarea */
+.isEditing .card__title.editableTextarea {
+  resize: none;
+}
+
+
+.isEditing .intro__textBox {
+  justify-content: flex-start;
+  /* 🔥 수정 모드는 위로 */
+}
+
+.isEditing .intro__text.editableTextarea {
+  display: block;
+  width: 100%;
+
+
+  padding: 10px 15px;
+  margin: 0;
+
+  resize: none;
+  overflow-y: auto;
+}
+
+
+/* rich editor content (edit mode tweak) */
+.isEditing .richEditor__content {
+  padding: 10px 15px;
+  min-height: 0px;
+  font-size: 17px;
+  color: #000;
+  line-height: 1.30;
+  font-weight: 400;
 }
