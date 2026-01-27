@@ -76,7 +76,8 @@
   white-space: nowrap;
   min-width: max-content;
 
-  overflow-x: auto;
+  overflow-x: visible;
+  padding: 10px 0;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -144,7 +145,7 @@
   background: rgba(0, 102, 255, .05);
   border: 1px dashed var(--main-blue);
   border-radius: 10px;
-  padding: 10px 15px;
+  padding: 12px 15px;
 
   outline: none;
   resize: none;
@@ -279,6 +280,8 @@
 
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
   background: #fff;
   border-radius: 25px;
@@ -289,13 +292,21 @@
 }
 
 .intro__textDisplay {
-  padding: 10px 15px;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 12px 15px;
+  margin: 0;
   box-sizing: border-box;
 
   font-size: 18px;
   line-height: 1.35;
   white-space: pre-wrap;
+
+  display: flex;
+  align-items: center;
+
+  text-align: left;
 }
 
 .intro__text.editableTextarea {
@@ -308,10 +319,11 @@
   white-space: pre-wrap;
   word-break: keep-all;
 
-  padding: 10px 15px;
+  padding: 12px 15px;
   margin: 0;
   box-sizing: border-box;
   width: 100%;
+  height: 100%;
 
   display: block;
 
@@ -605,7 +617,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 
-  padding: 10px 15px;
+  padding: 12px 15px;
   margin: 0;
   /* width: 100%; */
   box-sizing: border-box;
@@ -616,8 +628,8 @@
   margin-top: auto;
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 0 0 0 10px;
+  margin-bottom: 5px;
+  padding: 0 0 0 12px;
 }
 
 .card__icon {
@@ -665,7 +677,7 @@
 
 .card__iconBox--wide {
   margin-top: 0;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -691,7 +703,7 @@
 }
 
 .wide-editor-container.split-view {
-  gap: 30px;
+  gap: 10px;
 }
 
 .editor-wrapper {
@@ -699,6 +711,37 @@
   display: flex;
   flex-direction: column;
 }
+
+
+.wide-read-container.split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.wide-read-col {
+  min-width: 0;
+}
+
+.split-view {
+  --lh: 1.30;
+  --ls: -0.02em;
+}
+
+/* 기본(1단) — 지금 쓰는 값 유지 */
+.card__desc,
+.richEditor__content {
+  line-height: var(--lh);
+  letter-spacing: var(--ls);
+}
+
+/* ✅ 2단일 때만 조정 */
+.split-view .card__desc,
+.split-view .richEditor__content {
+  line-height: var(--lh);
+  letter-spacing: var(--ls);
+}
+
 
 /* =========================================================
    7) Rich Editor
@@ -733,7 +776,7 @@
 
 .richEditor__content {
   min-height: 0px;
-  padding: 10px 15px;
+  padding: 12px 15px;
 
   border-radius: 10px;
   border: 1px dashed var(--main-blue);
@@ -765,7 +808,7 @@
 
 .card__desc li,
 .richEditor__content li {
-  line-height: 1.3;
+  line-height: 1.15;
   margin-bottom: 5px;
   color: #000;
 }
@@ -802,18 +845,18 @@
   display: block;
   width: 100%;
 
-
-  padding: 10px 15px;
+  padding: 12px 13px;
   margin: 0;
 
   resize: none;
   overflow-y: auto;
+  border: 1px dashed var(--main-blue);
 }
 
 
 /* rich editor content (edit mode tweak) */
 .isEditing .richEditor__content {
-  padding: 10px 15px;
+  padding: 12px 15px;
   min-height: 0px;
   font-size: 17px;
   color: #000;

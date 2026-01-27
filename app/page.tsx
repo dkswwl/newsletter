@@ -2,9 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from './lib/supabaseClient';
-
 import * as htmlToImage from 'html-to-image';
-
 
 type CardField = 'title' | 'desc';
 
@@ -14,7 +12,7 @@ type CardItemData = {
   bgImage: string;
   mainImage: string; // file 업로드 시 dataURL이 들어올 수 있음
   title: string;
-  desc: string;
+  desc: string; // HTML string
   icon: string;
 };
 
@@ -40,6 +38,29 @@ const STORAGE_KEYS = {
   cards: 'card-content-data-total',
 } as const;
 
+// =========================
+// WideCard: 2단 저장 구분자
+// =========================
+const WIDE_SPLIT_MARK = '<!--WIDE_SPLIT-->';
+
+function serializeWideDesc(col1: string, col2: string, isSplit: boolean) {
+  const left = col1 ?? '';
+  const right = col2 ?? '';
+  if (!isSplit) return left;
+  return `${left}<br/>${WIDE_SPLIT_MARK}${right}`;
+}
+
+function parseWideDesc(desc: string) {
+  const raw = desc ?? '';
+  const idx = raw.indexOf(WIDE_SPLIT_MARK);
+  if (idx === -1) return { col1: raw, col2: '', isSplit: false };
+
+  let left = raw.slice(0, idx);
+  const right = raw.slice(idx + WIDE_SPLIT_MARK.length);
+
+  left = left.replace(/<br\s*\/?>\s*$/i, '');
+  return { col1: left, col2: right, isSplit: true };
+}
 
 // =========================
 // BlueBold
@@ -51,7 +72,6 @@ function applyBlueBoldToggle() {
   const range = sel.getRangeAt(0);
   if (range.collapsed) return;
 
-  // ✅ 선택 영역이 이미 blue-bold span 안에 있는지 검사 (시작점 기준)
   const startNode = range.startContainer;
   const startEl =
     startNode.nodeType === Node.ELEMENT_NODE
@@ -60,31 +80,20 @@ function applyBlueBoldToggle() {
 
   const blueSpan = startEl?.closest?.('span[data-bluebold="1"]') as HTMLElement | null;
 
-  // =========================
-  // 1) 이미 BlueBold 상태면 -> 풀기(unwrap)
-  // =========================
   if (blueSpan) {
     const parent = blueSpan.parentNode;
     if (!parent) return;
 
-    // span 안의 자식들을 span 밖으로 이동
     while (blueSpan.firstChild) parent.insertBefore(blueSpan.firstChild, blueSpan);
-
-    // span 제거
     parent.removeChild(blueSpan);
 
-    // selection 정리(UX)
     sel.removeAllRanges();
     const newRange = document.createRange();
     newRange.setStart(parent, Math.min(parent.childNodes.length, 0));
     sel.addRange(newRange);
-
     return;
   }
 
-  // =========================
-  // 2) 아니면 -> 감싸기(wrap)
-  // =========================
   const span = document.createElement('span');
   span.setAttribute('data-bluebold', '1');
   span.style.fontWeight = '700';
@@ -93,22 +102,18 @@ function applyBlueBoldToggle() {
   span.appendChild(range.extractContents());
   range.insertNode(span);
 
-  // 커서 위치 정리(UX)
   sel.removeAllRanges();
   const newRange = document.createRange();
   newRange.setStartAfter(span);
   sel.addRange(newRange);
 }
 
-
 // =========================
 // List
 // =========================
 function toggleBulletPoint() {
-  // 브라우저의 내장 리스트 생성 명령 실행
   document.execCommand('insertUnorderedList', false);
 }
-
 
 const INITIAL_CARDS: CardItemData[] = [
   {
@@ -194,18 +199,8 @@ const INITIAL_CARDS: CardItemData[] = [
   },
 ];
 
-
 function resolveImageSrc(src: string) {
   return src.startsWith('data:') ? src : `/images/${src}`;
-}
-
-function safeParse<T>(value: string | null): T | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return null;
-  }
 }
 
 export default function Home() {
@@ -213,16 +208,16 @@ export default function Home() {
   const [cardData, setCardData] = useState<CardItemData[]>(INITIAL_CARDS);
   const [isEditing, setIsEditing] = useState(false);
   const [mounted, setMounted] = useState(false);
+
   const [editorName, setEditorName] = useState('');
   const [isComposing, setIsComposing] = useState(false);
 
+  const wideFlushRef = useRef<null | (() => string)>(null);
 
   useEffect(() => {
     setMounted(true);
-    console.log('ENV CHECK', process.env.NEXT_PUBLIC_SUPABASE_URL);
 
     (async () => {
-      // 1) intro 불러오기
       const { data: meta, error: metaError } = await supabase
         .from('newsletter_meta')
         .select('intro_text')
@@ -235,7 +230,6 @@ export default function Home() {
         setIntroText(meta.intro_text);
       }
 
-      // 2) 카드 불러오기
       const { data: rows, error: cardError } = await supabase
         .from('institution_content')
         .select('institution_id, title, content, main_image')
@@ -255,17 +249,15 @@ export default function Home() {
             return {
               ...base,
               title: row.title ?? base.title,
-              desc: row.content ?? base.desc,       // ✅ UI의 desc ← DB의 content
+              desc: row.content ?? base.desc,
               mainImage: row.main_image ?? base.mainImage,
             };
-          })
+          }),
         );
       }
     })();
   }, []);
 
-
-  // 출력하기
   const handleExport = async () => {
     const pages = document.querySelectorAll('.pageSection');
 
@@ -290,8 +282,6 @@ export default function Home() {
     }
   };
 
-
-  // 수정하기
   const handleTextChange = (id: number, field: CardField, value: string) => {
     setCardData((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   };
@@ -307,49 +297,32 @@ export default function Home() {
     reader.readAsDataURL(file);
   };
 
+  const { wideCard, page2, page3 } = useMemo(() => {
+    return {
+      wideCard: cardData[0],
+      page2: cardData.slice(1, 5),
+      page3: cardData.slice(5, 9),
+    };
+  }, [cardData]);
+
   const handleSave = async () => {
-    // 0) 작성자 문자열 정리(빈칸이면 null로 저장)
+    // ✅ (권장) 포커스 해제로 IME/입력 반영 안정화
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+    const wideDesc = wideFlushRef.current?.() ?? null;
+    const wideId = wideCard?.id;
+
+    // ✅ 저장 직후 화면 반영을 위해 state도 확정
+    const nextCardData = cardData.map((c) =>
+      c.id === wideId && wideDesc != null ? { ...c, desc: wideDesc } : c,
+    );
+    setCardData(nextCardData);
+
     const editedBy = editorName.trim() ? editorName.trim() : null;
 
-    // // 1) intro 히스토리 먼저 기록
-    // const { error: metaHistError } = await supabase
-    //   .from('newsletter_meta_history')
-    //   .insert({
-    //     meta_id: 1,
-    //     intro_text: introText,
-    //     edited_by: editedBy,
-    //     edited_at: new Date().toISOString(),
-    //   });
-
-    // if (metaHistError) {
-    //   console.error('meta history insert error:', metaHistError);
-    //   alert('인트로 히스토리 저장 실패');
-    //   return;
-    // }
-
-    // // 2) 기관 카드 히스토리 기록 (배치 insert)
-    // const cardHistoryRows = cardData.map((c) => ({
-    //   institution_id: c.id,
-    //   lab: c.lab ?? '(unknown)',
-    //   title: c.title ?? '',
-    //   content: c.desc ?? '',
-    //   main_image: c.mainImage ?? 'neuromeka.png',
-    //   edited_by: editedBy ?? c.lab ?? null,
-    //   edited_at: new Date().toISOString(),
-    // }));
-
-
-    // const { error: cardHistError } = await supabase
-    //   .from('institution_content_history')
-    //   .insert(cardHistoryRows);
-
-    // if (cardHistError) {
-    //   console.error('card history insert error:', cardHistError);
-    //   alert('카드 히스토리 저장 실패');
-    //   return;
-    // }
-
-    // 3) 최신 상태 테이블(newsletter_meta) upsert
     const { error: metaError } = await supabase
       .from('newsletter_meta')
       .upsert(
@@ -358,7 +331,7 @@ export default function Home() {
           intro_text: introText,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: 'id' }
+        { onConflict: 'id' },
       );
 
     if (metaError) {
@@ -367,8 +340,7 @@ export default function Home() {
       return;
     }
 
-    // 4) 최신 상태 테이블(institution_content) upsert
-    const updates = cardData.map((c) => ({
+    const updates = nextCardData.map((c) => ({
       institution_id: c.id,
       title: c.title,
       content: c.desc,
@@ -390,26 +362,12 @@ export default function Home() {
     alert('저장되었습니다.');
   };
 
-
-  const { wideCard, page2, page3 } = useMemo(() => {
-    return {
-      wideCard: cardData[0],
-      page2: cardData.slice(1, 5),
-      page3: cardData.slice(5, 9),
-    };
-  }, [cardData]);
-
   if (!mounted) return null;
 
   return (
     <main className={`min-h-screen bg-slate-900 flex flex-col items-center ${isEditing ? 'isEditing' : ''}`}>
-      {/* Control 버튼 */}
       <div className="editControlBar">
-        {/* 출력하기 */}
-        <button
-          onClick={handleExport}
-          className="editBtn editBtn--gray"
-        >
+        <button onClick={handleExport} className="editBtn editBtn--gray">
           <span className="editBtn__icon">🖨️</span>
           출력하기
         </button>
@@ -427,7 +385,6 @@ export default function Home() {
         )}
       </div>
 
-
       {/* 1p */}
       <section className="pageSection">
         <div className="figmaCanvas figmaCanvas--intro shadow-2xl" data-content="Subproject1">
@@ -442,12 +399,8 @@ export default function Home() {
           <div className="intro__host2">(연구개발기관)</div>
 
           <div className="intro__robotImage">
-            <img
-              src="/images/introRobot.png"
-              alt="robot illustration"
-            />
+            <img src="/images/introRobot.png" alt="robot illustration" />
           </div>
-
 
           <div className="intro__panel">
             <div className="intro__textBox">
@@ -481,6 +434,9 @@ export default function Home() {
               onImageChange={(file: File | null) => handleImageChange(wideCard.id, file)}
               isComposing={isComposing}
               setIsComposing={setIsComposing}
+              registerFlush={(fn) => {
+                wideFlushRef.current = fn;
+              }}
             />
           </div>
         </div>
@@ -563,37 +519,131 @@ function ImageEditButton({ isEditing, onFile }: { isEditing: boolean; onFile: (f
   );
 }
 
-function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardItemProps) {
+type WideCardItemProps = CardItemProps & {
+  registerFlush?: (fn: () => string) => void;
+};
+
+function WideCardItem({
+  item,
+  isEditing,
+  onTextChange,
+  onImageChange,
+  registerFlush,
+}: WideCardItemProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+
   const [isColumnMode, setIsColumnMode] = useState(false);
+  const modeRef = useRef(false);
+
   const editorRef1 = useRef<HTMLDivElement>(null);
   const editorRef2 = useRef<HTMLDivElement>(null);
 
-  const handleToggleColumn = () => {
-    if (isColumnMode) {
-      const leftContent = editorRef1.current?.innerHTML || '';
-      const rightContent = editorRef2.current?.innerHTML || '';
-      const combined = leftContent + (rightContent ? `<br/>${rightContent}` : '');
-      onTextChange(item.id, 'desc', combined);
+  const draftRef = useRef<{ col1: string; col2: string }>({ col1: '', col2: '' });
+
+  useEffect(() => {
+    modeRef.current = isColumnMode;
+  }, [isColumnMode]);
+
+  useEffect(() => {
+    if (isEditing) return;
+    draftRef.current = { col1: '', col2: '' };
+    setIsColumnMode(false);
+    modeRef.current = false;
+  }, [isEditing]);
+
+  // ✅ 편집 진입 시: DB desc 파싱해서 2단 복원
+  useEffect(() => {
+    if (!isEditing) return;
+
+    if (!draftRef.current.col1 && !draftRef.current.col2) {
+      const parsed = parseWideDesc(item.desc || '');
+      draftRef.current.col1 = parsed.col1 || '';
+      draftRef.current.col2 = parsed.col2 || '';
+      setIsColumnMode(parsed.isSplit);
+      modeRef.current = parsed.isSplit;
     }
-    setIsColumnMode(!isColumnMode);
+
+    if (editorRef1.current) editorRef1.current.innerHTML = draftRef.current.col1;
+    if (editorRef2.current) editorRef2.current.innerHTML = draftRef.current.col2;
+  }, [isEditing, item.desc]);
+
+  // ✅ 모드 토글/복원 시: draft → DOM
+  useEffect(() => {
+    if (!isEditing) return;
+    if (editorRef1.current) editorRef1.current.innerHTML = draftRef.current.col1;
+    if (isColumnMode && editorRef2.current) editorRef2.current.innerHTML = draftRef.current.col2;
+  }, [isEditing, isColumnMode]);
+
+  // ✅ 저장 직전 flush: DOM 직접 읽기
+  const flushToSaveString = () => {
+    const root = rootRef.current;
+    const col1El = root?.querySelector('[data-wide-col="1"]') as HTMLElement | null;
+    const col2El = root?.querySelector('[data-wide-col="2"]') as HTMLElement | null;
+
+    const col1 = col1El?.innerHTML ?? '';
+    const col2 = col2El?.innerHTML ?? '';
+
+    draftRef.current.col1 = col1;
+    draftRef.current.col2 = col2;
+
+    return serializeWideDesc(col1, col2, modeRef.current);
+  };
+
+  useEffect(() => {
+    if (!registerFlush) return;
+    registerFlush(flushToSaveString);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registerFlush]);
+
+  const handleToggleColumn = () => {
+    if (!isEditing) return;
+
+    const root = rootRef.current;
+    const col1El = root?.querySelector('[data-wide-col="1"]') as HTMLElement | null;
+    const col2El = root?.querySelector('[data-wide-col="2"]') as HTMLElement | null;
+
+    draftRef.current.col1 = col1El?.innerHTML ?? draftRef.current.col1;
+    draftRef.current.col2 = col2El?.innerHTML ?? draftRef.current.col2;
+
+    if (isColumnMode) {
+      const combined =
+        draftRef.current.col1 + (draftRef.current.col2 ? `<br/>${draftRef.current.col2}` : '');
+      draftRef.current.col1 = combined;
+      draftRef.current.col2 = '';
+
+      onTextChange(item.id, 'desc', combined);
+
+      requestAnimationFrame(() => {
+        if (editorRef1.current) editorRef1.current.innerHTML = combined;
+      });
+    }
+
+    setIsColumnMode((prev) => {
+      const next = !prev;
+      modeRef.current = next;
+      return next;
+    });
   };
 
   const applyCommand = (commandFn: () => void) => {
     commandFn();
     requestAnimationFrame(() => {
-      if (!isColumnMode && editorRef1.current) {
+      if (editorRef1.current) draftRef.current.col1 = editorRef1.current.innerHTML;
+      if (editorRef2.current) draftRef.current.col2 = editorRef2.current.innerHTML;
+
+      if (!modeRef.current && editorRef1.current) {
         onTextChange(item.id, 'desc', editorRef1.current.innerHTML);
       }
     });
   };
 
+  // ✅ 읽기 모드: split 마크가 있으면 2단 레이아웃으로 렌더링
+  const readParsed = useMemo(() => parseWideDesc(item.desc || ''), [item.desc]);
+
   return (
-    <div className="card card--wide">
+    <div ref={rootRef} className="card card--wide">
       <div className="card__top">
-        <div
-          className="card__labHeader"
-          style={{ backgroundImage: `url('/images/${item.bgImage}')` }}
-        >
+        <div className="card__labHeader" style={{ backgroundImage: `url('/images/${item.bgImage}')` }}>
           <span className="card__labBadge">{item.lab}</span>
         </div>
 
@@ -607,7 +657,6 @@ function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardItem
 
       <div className="card__bottom card__bottom--wide">
         <div className="card__bottomInner">
-          {/* Title */}
           {isEditing ? (
             <textarea
               className="card__title editableTextarea"
@@ -619,26 +668,10 @@ function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardItem
             <h3 className="card__title">{item.title}</h3>
           )}
 
-          {/* ✅ 아이콘(또는 툴바) + 콘텐츠 묶음 */}
           <div className="wideBody">
-
-
-            {/* ✅ Icon ↔ Toolbar (desc보다 위, 동일 height 슬롯) */}
             <div className="card__actionSlot">
               {isEditing ? (
                 <div className="richEditor__toolbar">
-                  <button
-                    type="button"
-                    className="richEditor__btn"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      applyCommand(applyBlueBoldToggle);
-                    }}
-                  >
-                    Bold
-                  </button>
-
-
                   <button
                     type="button"
                     className="richEditor__btn"
@@ -650,6 +683,16 @@ function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardItem
                     List
                   </button>
 
+                  <button
+                    type="button"
+                    className="richEditor__btn"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      applyCommand(applyBlueBoldToggle);
+                    }}
+                  >
+                    Bold
+                  </button>
 
                   <button
                     type="button"
@@ -664,59 +707,63 @@ function WideCardItem({ item, isEditing, onTextChange, onImageChange }: CardItem
                 </div>
               ) : (
                 <div className="card__iconBox card__iconBox--wide">
-                  <img
-                    src={`/icons/${item.icon}`}
-                    alt="icon"
-                    className="card__icon card__icon--wide"
-                  />
+                  <img src={`/icons/${item.icon}`} alt="icon" className="card__icon card__icon--wide" />
                 </div>
               )}
             </div>
 
-
-            {/* ✅ Desc / Editor (아래) */}
-            <div className={`wide-editor-container ${isColumnMode ? 'split-view' : ''}`}>
-              <div className="editor-wrapper">
-                {isEditing ? (
+            {/* ====== Editor or Read ====== */}
+            {isEditing ? (
+              <div className={`wide-editor-container ${isColumnMode ? 'split-view' : ''}`}>
+                <div className="editor-wrapper">
                   <div
                     ref={editorRef1}
+                    data-wide-col="1"
                     className="richEditor__content"
                     contentEditable
                     suppressContentEditableWarning
-                    onInput={(e) => onTextChange(item.id, 'desc', e.currentTarget.innerHTML)}
-                    dangerouslySetInnerHTML={{ __html: item.desc }}
+                    onInput={(e) => {
+                      draftRef.current.col1 = e.currentTarget.innerHTML;
+                      if (!modeRef.current) onTextChange(item.id, 'desc', e.currentTarget.innerHTML);
+                    }}
                   />
-                ) : (
-                  <div className="card__desc" dangerouslySetInnerHTML={{ __html: item.desc }} />
-                )}
-              </div>
+                </div>
 
-
-              {isColumnMode && (
-                <div className="editor-wrapper">
-                  {isEditing ? (
+                {isColumnMode && (
+                  <div className="editor-wrapper">
                     <div
                       ref={editorRef2}
+                      data-wide-col="2"
                       className="richEditor__content"
                       contentEditable
                       suppressContentEditableWarning
+                      onInput={(e) => {
+                        draftRef.current.col2 = e.currentTarget.innerHTML;
+                      }}
                     />
-                  ) : (
-                    <div className="card__desc" />
-                  )}
+                  </div>
+                )}
+              </div>
+            ) : readParsed.isSplit ? (
+              // ✅ 읽기 모드 2단 렌더링
+              <div className="wide-read-container split-view">
+                <div className="wide-read-col wide-read-col--left">
+                  <div className="card__desc" dangerouslySetInnerHTML={{ __html: readParsed.col1 }} />
                 </div>
-              )}
-            </div>
-
-
+                <div className="wide-read-col wide-read-col--right">
+                  <div className="card__desc" dangerouslySetInnerHTML={{ __html: readParsed.col2 }} />
+                </div>
+              </div>
+            ) : (
+              // ✅ 읽기 모드 1단 렌더링
+              <div className="card__desc" dangerouslySetInnerHTML={{ __html: item.desc }} />
+            )}
           </div>
-          {/* wideBody end */}
         </div>
       </div>
     </div>
   );
 }
-
 
 function CardItem({
   item,
@@ -737,19 +784,12 @@ function CardItem({
   return (
     <div className="card">
       <div className="card__top">
-        <div
-          className="card__labHeader"
-          style={{ backgroundImage: `url('/images/${item.bgImage}')` }}
-        >
+        <div className="card__labHeader" style={{ backgroundImage: `url('/images/${item.bgImage}')` }}>
           <span className="card__labBadge">{item.lab}</span>
         </div>
 
         <div className="card__imageWrap group">
-          <img
-            src={resolveImageSrc(item.mainImage)}
-            alt={item.lab}
-            className="card__image"
-          />
+          <img src={resolveImageSrc(item.mainImage)} alt={item.lab} className="card__image" />
           <div className="card__imageEditWrap">
             <ImageEditButton isEditing={isEditing} onFile={onImageChange} />
           </div>
@@ -757,7 +797,6 @@ function CardItem({
       </div>
 
       <div className="card__bottom">
-        {/* Title */}
         {isEditing ? (
           <textarea
             className="card__title editableTextarea"
@@ -769,12 +808,8 @@ function CardItem({
           <h3 className="card__title">{item.title}</h3>
         )}
 
-
-        {/* ✅ 아래로 밀어주는 스페이서 */}
         <div className="card__spacer" />
 
-
-        {/* ✅ Icon ↔ Toolbar (always bottom) */}
         <div className="card__actionSlot">
           {isEditing ? (
             <div className="richEditor__toolbar">
@@ -791,7 +826,6 @@ function CardItem({
               >
                 List
               </button>
-
 
               <button
                 type="button"
@@ -814,7 +848,6 @@ function CardItem({
           )}
         </div>
 
-        {/* ✅ Body (Editor ↔ Read) */}
         {isEditing ? (
           <div
             ref={editorRef}
