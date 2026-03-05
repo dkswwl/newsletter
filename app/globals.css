@@ -163,6 +163,16 @@
 /* =========================================================
    3) Intro (Page 1)
 ========================================================= */
+.intro__date {
+  position: absolute;
+  top: 85px;
+  left: 90px;
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #0066ff;
+}
+
 .intro__label {
   position: absolute;
   top: 120px;

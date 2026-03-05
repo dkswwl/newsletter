@@ -388,6 +388,7 @@ export default function Home() {
       {/* 1p */}
       <section className="pageSection">
         <div className="figmaCanvas figmaCanvas--intro shadow-2xl" data-content="Subproject1">
+          <div className="intro__date">2026.03</div>
           <div className="intro__label">
             <div className="intro__badge intro__badge--small">한국형 ARPA-H 프로젝트 필수의료 임무 과제</div>
             <div className="intro__badge intro__badge--big">SARAM-H 연구단 News Letter</div>
