@@ -393,7 +393,7 @@ export default function Home() {
             <div className="intro__badge intro__badge--big">SARAM-H 연구단 News Letter</div>
           </div>
 
-          <div className="intro__version">VOL.2</div>
+          <div className="intro__version">VOL.1</div>
 
           <div className="intro__host">주관 양산부산대학교병원</div>
           <div className="intro__host2">(연구개발기관)</div>
