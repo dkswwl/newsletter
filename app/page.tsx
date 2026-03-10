@@ -118,7 +118,7 @@ function toggleBulletPoint() {
 const INITIAL_CARDS: CardItemData[] = [
   {
     id: 1,
-    lab: "양산부산대학교병원",
+    lab: "양산부산대/경상국립대/분당서울대학교병원",
     bgImage: "lab-bg_1-01.svg",
     mainImage: "default.png",
     title: "소제목",
